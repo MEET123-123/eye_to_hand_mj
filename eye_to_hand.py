@@ -19,7 +19,7 @@ class matrix_transform:
         self.r = r
         self.t = t
         self.stream_data = stream_data
-        self.HOST = '192.168.1.6'  # The remote host
+        self.HOST = '192.168.56.1'  # The remote host
         self.PORT = 30004
         # stream_data_fomat(time_serial):data([0]:ur_data,[1]:ndi_data)
 
@@ -186,8 +186,13 @@ class matrix_transform:
         TRACKER.start_tracking()
 
         #######################初始化机械臂##############################
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((self.HOST, self.PORT))
+        # 越疆机械臂连接
+        # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # s.connect((self.HOST, self.PORT))
+
+        # UR机械臂连接
+        rtde_c = rtde_control.RTDEControlInterface(self.HOST)
+
         # TODO:
         f = open(robot_points_path, "r")
         data = []
@@ -209,8 +214,8 @@ class matrix_transform:
                     robot_trans = robot_homogenous_trans
                     break
                 else:
-                    pass
-                    #TODO: move to the position in line's position
+                    rtde_c.moveL([TCP_Pos[0], TCP_Pos[1], TCP_Pos[2], TCP_Pos[3],
+                                  TCP_Pos[4], TCP_Pos[5]], 0.2, 0.2)
 
             raw_track_index = 0
             # 对错误数值进行计数，如果超过15个错误值就退出NDI跟踪，表明跟踪错误
@@ -287,6 +292,7 @@ class matrix_transform:
         # TODO:
         # return [X, Y, Z, Rx, Ry, Rz]
         result_test = np.array([0,0,0,0,0,0])
+        actual_tcp = rtde_r.getTargetTCPPose()
         return result_test
 
     def getTargetJointVel(self):

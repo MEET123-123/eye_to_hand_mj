@@ -6,6 +6,8 @@ import cv2
 
 # 使针尖位置不动，使机械臂绕着不同的位置旋转
 
+
+
 def EulerAngles2RotationMatrix(theta, format='degree'):
     # 将欧拉角转化为旋转矩阵
     """
@@ -56,8 +58,9 @@ def get_rx_tx(homogenous_T):
     return rx, tx
 
 # 初始化
-# =rtde_receive.RTDEReceiveInterface("192.168.56.1")
-# rtde_c=rtde_control.RTDEControlInterface("192.168.56.1")
+rtde_r = rtde_receive.RTDEReceiveInterface("192.168.56.1")
+rtde_c = rtde_control.RTDEControlInterface("192.168.56.1")
+
 
 def getNewMovPosition(trans_pre_vector,rot_pre_vector,rot_temp_vector):
     # trans_pre_vector : 上一轮的平移向量
@@ -88,7 +91,7 @@ def getNewMovPosition(trans_pre_vector,rot_pre_vector,rot_temp_vector):
     print('tcp_T=',tcp_T)
 
     # 动作
-    # rtde_c.moveL([trans_pre_vector[0], trans_pre_vector[1], trans_pre_vector[2], tcp_r_vector[0], tcp_r_vector[1], tcp_r_vector[2]], 0.2, 0.2)
+    rtde_c.moveL([trans_pre_vector[0], trans_pre_vector[1], trans_pre_vector[2], tcp_r_vector[0], tcp_r_vector[1], tcp_r_vector[2]], 0.05, 0.05)
 
     # 返回
     # tcp_t_vector: tcp平移向量
@@ -96,12 +99,15 @@ def getNewMovPosition(trans_pre_vector,rot_pre_vector,rot_temp_vector):
     return tcp_t_vector,tcp_r_vector
 
 
-# actual_tcp=rtde_r.getTargetTCPPose()
-# actual_q=rtde_r.getActualQ()
-# tcp_r_vector = (actual_tcp[3], actual_tcp[4], actual_tcp[5])
-# tcp_t_vector = np.array([actual_tcp[0], actual_tcp[1], actual_tcp[2]]).reshape(3, 1)
-tcp_r_vector = np.array([0.56,0.22,0.21])
-tcp_t_vector = np.array([0.1,0.4,0.9]).reshape((3,1))
+actual_tcp=rtde_r.getTargetTCPPose()
+actual_q=rtde_r.getActualQ()
+tcp_r_vector = (actual_tcp[3], actual_tcp[4], actual_tcp[5])
+tcp_t_vector = np.array([actual_tcp[0], actual_tcp[1], actual_tcp[2]]).reshape(3, 1)
+
+print('actual_tcp=',actual_tcp)
+print('actual_q=',actual_q)
+# tcp_r_vector = np.array([0.56,0.22,0.21])
+# tcp_t_vector = np.array([0.1,0.4,0.9]).reshape((3,1))
 
 np.random.seed(0)
 pos_random = np.random.randn(20, 3) * 10
@@ -110,3 +116,6 @@ for i in range(20):
     # 生成一系列旋转向量
     rot_temp = pos_random[i,:]
     tcp_t_vector,tcp_r_vector = getNewMovPosition(tcp_t_vector,tcp_r_vector,rot_temp)
+
+rtde_c.disconnect()
+rtde_r.disconnect()
