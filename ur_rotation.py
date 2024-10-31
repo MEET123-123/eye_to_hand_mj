@@ -4,6 +4,7 @@ import rtde_receive
 import rtde_control
 import cv2
 
+# 使针尖位置不动，使机械臂绕着不同的位置旋转
 
 def EulerAngles2RotationMatrix(theta, format='degree'):
     # 将欧拉角转化为旋转矩阵
@@ -34,15 +35,16 @@ def EulerAngles2RotationMatrix(theta, format='degree'):
     R = np.dot(R_z, np.dot(R_y, R_x))
     return R
 
-# 变成4乘4矩阵
+# 变成4乘4齐次矩阵
 def get_transfer_ret(Rce, Tce):
     ret = np.zeros((4, 4))
     for i in range(3):
         for j in range(3):
             ret[i][j] = Rce[i][j]
-        ret[i][3] = Tce[i][0]
+        ret[i][3] = Tce[i]
     ret[3][3] = 1
     return ret
+
 
 def get_rx_tx(homogenous_T):
     # T->RX,TX
